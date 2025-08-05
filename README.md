@@ -18,18 +18,18 @@ A Python-based web dashboard for monitoring network devices and visualizing netw
 ## Installation
 
 1. Clone the repository:
-   ```cmd
+   ```powershell
    git clone <repository-url>
    cd monitor-dashboard
    ```
 
 2. Install dependencies using uv (recommended):
-   ```cmd
+   ```powershell
    uv sync
    ```
 
    Or using pip:
-   ```cmd
+   ```powershell
    pip install -e .
    ```
 
@@ -38,7 +38,7 @@ A Python-based web dashboard for monitoring network devices and visualizing netw
 ### Basic Usage
 
 Run the dashboard with default settings:
-```cmd
+```powershell
 python main.py
 ```
 
@@ -46,7 +46,7 @@ The dashboard will be available at `http://localhost:8050`
 
 ### Command Line Options
 
-```cmd
+```powershell
 python main.py [OPTIONS]
 
 Options:
@@ -113,7 +113,7 @@ monitor-dashboard/
 
 This project uses [Ruff](https://docs.astral.sh/ruff/) for code formatting and linting:
 
-```cmd
+```powershell
 # Run linting
 uv run ruff check
 
@@ -125,7 +125,7 @@ uv run ruff format
 
 Add new dependencies to `pyproject.toml`:
 
-```cmd
+```powershell
 # Add a runtime dependency
 uv add package-name
 
@@ -153,7 +153,7 @@ The monitoring device should be accessible via HTTP and provide the expected dat
 ### Debug Mode
 
 Enable debug mode for detailed logging:
-```cmd
+```powershell
 python main.py --debug
 ```
 
