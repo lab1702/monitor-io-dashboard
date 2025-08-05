@@ -45,6 +45,11 @@ class NetworkDashboard:
                     "tickfont": {"color": "#b0b0b0"},
                     "title": {"font": {"color": "#ffffff"}},
                 },
+                "hoverlabel": {
+                    "bgcolor": "#2d2d2d",
+                    "bordercolor": "#404040",
+                    "font": {"color": "#ffffff", "family": "system-ui, -apple-system, sans-serif"}
+                },
             }
         else:
             return {
@@ -64,6 +69,11 @@ class NetworkDashboard:
                     "linecolor": "rgba(128,128,128,0.3)",
                     "tickfont": {"color": "#6c757d"},
                     "title": {"font": {"color": "#212529"}},
+                },
+                "hoverlabel": {
+                    "bgcolor": "#ffffff",
+                    "bordercolor": "#dee2e6",
+                    "font": {"color": "#212529", "family": "system-ui, -apple-system, sans-serif"}
                 },
             }
 
