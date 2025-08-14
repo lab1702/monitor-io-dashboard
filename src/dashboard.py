@@ -397,7 +397,7 @@ class NetworkDashboard:
                                 go.Scatter(
                                     x=valid_data["DateTime"],
                                     y=valid_data[avg_delay_col],
-                                    mode="lines+markers",
+                                    mode="lines",
                                     name=f"{target_name} - Avg Delay",
                                     line=dict(width=2),
                                 )
@@ -434,7 +434,7 @@ class NetworkDashboard:
                                 go.Scatter(
                                     x=valid_data["DateTime"],
                                     y=valid_data[loss_col],
-                                    mode="lines+markers",
+                                    mode="lines",
                                     name=f"{target_name} - Loss %",
                                     line=dict(width=2),
                                 )
