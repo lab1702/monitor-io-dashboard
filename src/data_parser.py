@@ -128,7 +128,7 @@ class NetworkMonitorParser:
         structure = self.detect_column_structure(df)
         active_targets = []
 
-        for target_num, cols in structure["target_groups"].items():
+        for target_num in structure["target_groups"]:
             target_col = f"Target{target_num}"
             if target_col in df.columns:
                 # Get target name
@@ -150,12 +150,8 @@ class NetworkMonitorParser:
                     {
                         "number": target_num,
                         "name": target_name,
-                        "columns": cols,
                         "has_delay_data": has_delay_data,
                         "has_loss_data": has_loss_data,
-                        "data_points": len(df[df[target_col].notna()])
-                        if target_col in df.columns
-                        else 0,
                     }
                 )
 
