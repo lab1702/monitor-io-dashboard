@@ -37,10 +37,8 @@ def main():
     args = parser.parse_args()
     
     # Update configuration with command line arguments
-    if args.url != config.MONITOR_URL:
-        config.MONITOR_URL = args.url
-    if args.refresh != config.REFRESH_INTERVAL:
-        config.REFRESH_INTERVAL = args.refresh
+    config.MONITOR_URL = args.url
+    config.REFRESH_INTERVAL = args.refresh
     
     # Create and run dashboard
     dashboard = NetworkDashboard()

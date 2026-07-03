@@ -1,6 +1,6 @@
 import dash
 import plotly.graph_objects as go
-from dash import dash_table, dcc, html
+from dash import dcc, html
 from dash.dependencies import Input, Output, State
 
 from config import config
@@ -181,51 +181,31 @@ class NetworkDashboard:
         self.app.clientside_callback(
             """
             function(n_clicks, current_theme) {
-                if (n_clicks > 0) {
-                    const newTheme = current_theme === 'dark' ? 'light' : 'dark';
-
-                    // Apply theme to document
-                    if (newTheme === 'dark') {
+                function apply(theme) {
+                    const dark = theme === 'dark';
+                    if (dark) {
                         document.documentElement.setAttribute('data-theme', 'dark');
-                        document.body.style.backgroundColor = '#1a1a1a';
-                        document.body.style.color = '#ffffff';
                     } else {
                         document.documentElement.removeAttribute('data-theme');
-                        document.body.style.backgroundColor = '#ffffff';
-                        document.body.style.color = '#212529';
                     }
-                    
-                    // Update button
+                    document.body.style.backgroundColor = dark ? '#1a1a1a' : '#ffffff';
+                    document.body.style.color = dark ? '#ffffff' : '#212529';
+
                     const button = document.getElementById('theme-toggle-btn');
                     if (button) {
-                        button.innerHTML = newTheme === 'dark' ? '☀️' : '🌙';
-                        button.title = newTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+                        button.innerHTML = dark ? '☀️' : '🌙';
+                        button.title = dark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
                     }
-
-                    return newTheme;
+                    return theme;
                 }
 
-                // Initialize on first load
+                if (n_clicks > 0) {
+                    return apply(current_theme === 'dark' ? 'light' : 'dark');
+                }
+
+                // Initialize on first load from the OS preference
                 const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                const initialTheme = prefersDark ? 'dark' : 'light';
-
-                if (initialTheme === 'dark') {
-                    document.documentElement.setAttribute('data-theme', 'dark');
-                    document.body.style.backgroundColor = '#1a1a1a';
-                    document.body.style.color = '#ffffff';
-                } else {
-                    document.documentElement.removeAttribute('data-theme');
-                    document.body.style.backgroundColor = '#ffffff';
-                    document.body.style.color = '#212529';
-                }
-                
-                const button = document.getElementById('theme-toggle-btn');
-                if (button) {
-                    button.innerHTML = initialTheme === 'dark' ? '☀️' : '🌙';
-                    button.title = initialTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
-                }
-                
-                return initialTheme;
+                return apply(prefersDark ? 'dark' : 'light');
             }
             """,
             Output("theme-store", "data"),
@@ -240,15 +220,10 @@ class NetworkDashboard:
         )
         def update_url(n_clicks, new_url):
             if n_clicks > 0 and new_url:
-                try:
-                    self.parser.base_url = new_url.rstrip("/")
-                    return new_url, html.Div(
-                        "✅ URL updated successfully!", className="status-success"
-                    )
-                except Exception as e:
-                    return config.MONITOR_URL, html.Div(
-                        f"❌ Error: {str(e)}", className="status-error"
-                    )
+                self.parser.base_url = new_url.rstrip("/")
+                return new_url, html.Div(
+                    "✅ URL updated successfully!", className="status-success"
+                )
             return config.MONITOR_URL, ""
 
         @self.app.callback(

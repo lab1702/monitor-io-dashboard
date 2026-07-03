@@ -11,8 +11,8 @@ class NetworkMonitorParser:
     def __init__(self, base_url: str = "http://192.168.0.246"):
         self.base_url = base_url.rstrip("/")
 
-    def get_file_list(self) -> List[Dict[str, str]]:
-        """Get list of available files from the monitoring device."""
+    def get_file_list(self) -> List[str]:
+        """Get filenames listed on the monitoring device's directory page."""
         try:
             response = requests.get(self.base_url)
             response.raise_for_status()
@@ -25,15 +25,7 @@ class NetworkMonitorParser:
                 if len(cells) >= 4:
                     link = cells[0].find("a")
                     if link:
-                        files.append(
-                            {
-                                "name": link.text,
-                                "url": f"{self.base_url}/{link.text}",
-                                "modified": cells[1].text,
-                                "size": cells[2].text,
-                                "type": cells[3].text,
-                            }
-                        )
+                        files.append(link.text)
             return files
         except Exception as e:
             print(f"Error fetching file list: {e}")
@@ -141,16 +133,10 @@ class NetworkMonitorParser:
 
     def get_all_daily_files(self) -> List[str]:
         """Get list of all daily CSV files."""
-        files = self.get_file_list()
-        daily_files = []
-
-        for file_info in files:
-            filename = file_info["name"]
-            if (
-                filename.startswith("NetMonitor_")
-                and filename.endswith(".csv")
-                and "Event_Summary" not in filename
-            ):
-                daily_files.append(filename)
-
-        return sorted(daily_files)
+        return sorted(
+            filename
+            for filename in self.get_file_list()
+            if filename.startswith("NetMonitor_")
+            and filename.endswith(".csv")
+            and "Event_Summary" not in filename
+        )
