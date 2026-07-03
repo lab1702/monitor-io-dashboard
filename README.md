@@ -34,70 +34,43 @@ A Python-based web dashboard for monitoring network devices and visualizing netw
 
 Run the dashboard with default settings:
 ```powershell
-python main.py
+streamlit run app.py
 ```
 
-The dashboard will be available at `http://localhost:8050`
-
-### Command Line Options
-
-```powershell
-python main.py [OPTIONS]
-
-Options:
-  --url URL        Monitor device URL (default: http://192.168.0.246)
-  --port PORT      Dashboard port (default: 8050)
-  --refresh INT    Refresh interval in seconds (default: 30)
-  --debug          Enable debug mode
-  --help           Show help message
-```
+The dashboard will be available at `http://localhost:8501`. Set the port with
+`streamlit run app.py --server.port=3000`. Monitor URL and refresh interval can
+also be changed live from the sidebar. Toggle light/dark mode from Streamlit's
+menu (top-right → Settings → Theme).
 
 ### Environment Variables
 
-Configure the dashboard using environment variables:
+Configure the defaults using environment variables:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `MONITOR_URL` | `http://192.168.0.246` | URL of the monitoring device |
-| `DASHBOARD_PORT` | `8050` | Port for the dashboard web server |
 | `REFRESH_INTERVAL` | `30` | Auto-refresh interval in seconds |
-| `DEBUG` | `False` | Enable debug mode |
 | `DASHBOARD_TITLE` | `Network Monitor Dashboard` | Dashboard title |
-| `MAX_HISTORY_DAYS` | `7` | Maximum days of historical data to display |
-| `SHOW_GRID` | `True` | Show grid lines on charts |
 | `CHART_HEIGHT` | `400` | Default chart height in pixels |
 
 ### Example with Environment Variables
 
-Windows (Command Prompt):
-```cmd
-set MONITOR_URL=http://192.168.1.100
-set DASHBOARD_PORT=3000
-set REFRESH_INTERVAL=60
-python main.py
-```
-
 Windows (PowerShell):
 ```powershell
 $env:MONITOR_URL="http://192.168.1.100"
-$env:DASHBOARD_PORT="3000"
 $env:REFRESH_INTERVAL="60"
-python main.py
+streamlit run app.py
 ```
 
 ## Project Structure
 
 ```
 monitor-dashboard/
-├── main.py              # Main entry point
+├── app.py               # Streamlit web application (entry point)
 ├── pyproject.toml       # Project configuration and dependencies
 ├── src/
-│   ├── __init__.py
 │   ├── config.py       # Configuration management
-│   ├── dashboard.py    # Dash web application
 │   └── data_parser.py  # Data parsing and processing
-├── assets/
-│   └── styles.css      # Custom CSS styles
 └── README.md           # This file
 ```
 
@@ -125,29 +98,8 @@ The monitoring device should be accessible via HTTP and provide the expected dat
 ### Common Issues
 
 1. **Connection refused**: Ensure the monitoring device is running and accessible at the configured URL
-2. **Port already in use**: Change the dashboard port using `--port` or `DASHBOARD_PORT`
+2. **Port already in use**: Change the dashboard port with `streamlit run app.py --server.port=3000`
 3. **No data displayed**: Check the monitoring device URL and ensure it's providing data in the expected format
-
-### Debug Mode
-
-Enable debug mode for detailed logging:
-```powershell
-python main.py --debug
-```
-
-Or set the environment variable:
-
-Windows (Command Prompt):
-```cmd
-set DEBUG=true
-python main.py
-```
-
-Windows (PowerShell):
-```powershell
-$env:DEBUG="true"
-python main.py
-```
 
 ## License
 
