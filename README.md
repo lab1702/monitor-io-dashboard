@@ -23,12 +23,7 @@ A Python-based web dashboard for monitoring network devices and visualizing netw
    cd monitor-dashboard
    ```
 
-2. Install dependencies using uv (recommended):
-   ```powershell
-   uv sync
-   ```
-
-   Or using pip:
+2. Install dependencies:
    ```powershell
    pip install -e .
    ```
@@ -96,7 +91,6 @@ python main.py
 monitor-dashboard/
 ├── main.py              # Main entry point
 ├── pyproject.toml       # Project configuration and dependencies
-├── ruff.toml           # Code linting configuration
 ├── src/
 │   ├── __init__.py
 │   ├── config.py       # Configuration management
@@ -109,28 +103,12 @@ monitor-dashboard/
 
 ## Development
 
-### Code Quality
-
-This project uses [Ruff](https://docs.astral.sh/ruff/) for code formatting and linting:
-
-```powershell
-# Run linting
-uv run ruff check
-
-# Format code
-uv run ruff format
-```
-
 ### Adding Dependencies
 
-Add new dependencies to `pyproject.toml`:
+Add new dependencies to `pyproject.toml`, then reinstall:
 
 ```powershell
-# Add a runtime dependency
-uv add package-name
-
-# Add a development dependency
-uv add --group dev package-name
+pip install -e .
 ```
 
 ## Configuration Details
