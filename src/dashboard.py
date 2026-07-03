@@ -20,62 +20,38 @@ class NetworkDashboard:
         self.setup_layout()
         self.setup_callbacks()
 
-    def get_chart_theme(self, is_dark=None):
+    def get_chart_theme(self, is_dark=False):
         """Get chart theme configuration for light or dark mode."""
-        # Default to a mixed theme that works reasonably well in both modes
-        if is_dark is None:
-            is_dark = False
-            
+        font_family = "system-ui, -apple-system, sans-serif"
         if is_dark:
-            return {
-                "template": "plotly_dark",
-                "paper_bgcolor": "rgba(0,0,0,0)",
-                "plot_bgcolor": "rgba(0,0,0,0)",
-                "font": {"color": "#ffffff", "family": "system-ui, -apple-system, sans-serif"},
-                "colorway": ["#3498db", "#e74c3c", "#2ecc71", "#f39c12", "#9b59b6", "#1abc9c"],
-                "xaxis": {
-                    "gridcolor": "rgba(128,128,128,0.3)",
-                    "linecolor": "rgba(128,128,128,0.4)",
-                    "tickfont": {"color": "#b0b0b0"},
-                    "title": {"font": {"color": "#ffffff"}},
-                },
-                "yaxis": {
-                    "gridcolor": "rgba(128,128,128,0.3)",
-                    "linecolor": "rgba(128,128,128,0.4)",
-                    "tickfont": {"color": "#b0b0b0"},
-                    "title": {"font": {"color": "#ffffff"}},
-                },
-                "hoverlabel": {
-                    "bgcolor": "#2d2d2d",
-                    "bordercolor": "#404040",
-                    "font": {"color": "#ffffff", "family": "system-ui, -apple-system, sans-serif"}
-                },
-            }
+            template, fg, tick = "plotly_dark", "#ffffff", "#b0b0b0"
+            grid, line = "rgba(128,128,128,0.3)", "rgba(128,128,128,0.4)"
+            hover_bg, hover_border = "#2d2d2d", "#404040"
         else:
-            return {
-                "template": "plotly_white",
-                "paper_bgcolor": "rgba(0,0,0,0)",
-                "plot_bgcolor": "rgba(0,0,0,0)",
-                "font": {"color": "#212529", "family": "system-ui, -apple-system, sans-serif"},
-                "colorway": ["#3498db", "#e74c3c", "#2ecc71", "#f39c12", "#9b59b6", "#1abc9c"],
-                "xaxis": {
-                    "gridcolor": "rgba(128,128,128,0.2)",
-                    "linecolor": "rgba(128,128,128,0.3)",
-                    "tickfont": {"color": "#6c757d"},
-                    "title": {"font": {"color": "#212529"}},
-                },
-                "yaxis": {
-                    "gridcolor": "rgba(128,128,128,0.2)",
-                    "linecolor": "rgba(128,128,128,0.3)",
-                    "tickfont": {"color": "#6c757d"},
-                    "title": {"font": {"color": "#212529"}},
-                },
-                "hoverlabel": {
-                    "bgcolor": "#ffffff",
-                    "bordercolor": "#dee2e6",
-                    "font": {"color": "#212529", "family": "system-ui, -apple-system, sans-serif"}
-                },
-            }
+            template, fg, tick = "plotly_white", "#212529", "#6c757d"
+            grid, line = "rgba(128,128,128,0.2)", "rgba(128,128,128,0.3)"
+            hover_bg, hover_border = "#ffffff", "#dee2e6"
+
+        axis = {
+            "gridcolor": grid,
+            "linecolor": line,
+            "tickfont": {"color": tick},
+            "title": {"font": {"color": fg}},
+        }
+        return {
+            "template": template,
+            "paper_bgcolor": "rgba(0,0,0,0)",
+            "plot_bgcolor": "rgba(0,0,0,0)",
+            "font": {"color": fg, "family": font_family},
+            "colorway": ["#3498db", "#e74c3c", "#2ecc71", "#f39c12", "#9b59b6", "#1abc9c"],
+            "xaxis": axis,
+            "yaxis": dict(axis),
+            "hoverlabel": {
+                "bgcolor": hover_bg,
+                "bordercolor": hover_border,
+                "font": {"color": fg, "family": font_family},
+            },
+        }
 
     def setup_layout(self):
         """Setup the dashboard layout."""
@@ -205,12 +181,9 @@ class NetworkDashboard:
         self.app.clientside_callback(
             """
             function(n_clicks, current_theme) {
-                console.log('Theme callback triggered, clicks:', n_clicks, 'current:', current_theme);
-                
                 if (n_clicks > 0) {
                     const newTheme = current_theme === 'dark' ? 'light' : 'dark';
-                    console.log('Switching to theme:', newTheme);
-                    
+
                     // Apply theme to document
                     if (newTheme === 'dark') {
                         document.documentElement.setAttribute('data-theme', 'dark');
@@ -227,18 +200,15 @@ class NetworkDashboard:
                     if (button) {
                         button.innerHTML = newTheme === 'dark' ? '☀️' : '🌙';
                         button.title = newTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
-                        console.log('Button updated to:', button.innerHTML);
                     }
-                    
+
                     return newTheme;
                 }
-                
+
                 // Initialize on first load
-                console.log('Initializing theme system');
                 const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
                 const initialTheme = prefersDark ? 'dark' : 'light';
-                console.log('System prefers dark:', prefersDark, 'setting initial theme:', initialTheme);
-                
+
                 if (initialTheme === 'dark') {
                     document.documentElement.setAttribute('data-theme', 'dark');
                     document.body.style.backgroundColor = '#1a1a1a';
@@ -253,7 +223,6 @@ class NetworkDashboard:
                 if (button) {
                     button.innerHTML = initialTheme === 'dark' ? '☀️' : '🌙';
                     button.title = initialTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
-                    console.log('Initial button set to:', button.innerHTML);
                 }
                 
                 return initialTheme;

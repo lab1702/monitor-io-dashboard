@@ -87,19 +87,6 @@ class NetworkMonitorParser:
             print(f"Error parsing latest results: {e}")
             return {}
 
-    def parse_event_summary(self) -> pd.DataFrame:
-        """Parse the event summary CSV file."""
-        try:
-            response = requests.get(f"{self.base_url}/NetMonitor_Event_Summary.csv")
-            response.raise_for_status()
-
-            df = pd.read_csv(io.StringIO(response.text))
-            df["DateTime"] = pd.to_datetime(df["Date"] + " " + df["Time"])
-            return df
-        except Exception as e:
-            print(f"Error parsing event summary: {e}")
-            return pd.DataFrame()
-
     def parse_daily_csv(self, filename: str) -> pd.DataFrame:
         """Parse a specific daily CSV file."""
         try:
@@ -113,23 +100,9 @@ class NetworkMonitorParser:
             print(f"Error parsing daily CSV {filename}: {e}")
             return pd.DataFrame()
 
-    def get_target_columns(self, df: pd.DataFrame) -> List[str]:
-        """Extract target names from DataFrame columns, handling variable column counts."""
-        targets = []
-        for col in df.columns:
-            if col.startswith("Target") and not any(
-                c in col for c in ["Transmit", "Receive", "Loss", "Delay"]
-            ):
-                targets.append(col)
-        return targets
-
     def detect_column_structure(self, df: pd.DataFrame) -> Dict[str, List[str]]:
         """Detect the actual column structure, handling DNS outages that change column count."""
-        structure = {"base_columns": [], "target_groups": {}, "total_targets": 0}
-
-        # Base columns (always present)
-        base_cols = ["Date", "Time", "Timezone", "IPAddress", "DateTime"]
-        structure["base_columns"] = [col for col in base_cols if col in df.columns]
+        structure = {"target_groups": {}}
 
         # Find target groups by looking for Target[N] columns
         target_numbers = set()
@@ -148,43 +121,7 @@ class NetworkMonitorParser:
             if target_cols:
                 structure["target_groups"][target_num] = target_cols
 
-        structure["total_targets"] = len(target_numbers)
         return structure
-
-    def extract_target_data(self, df: pd.DataFrame, target_num: int) -> pd.DataFrame:
-        """Extract data for a specific target number from DataFrame, handling missing targets gracefully."""
-        target_cols = [col for col in df.columns if col.endswith(str(target_num))]
-
-        if not target_cols:
-            # Return empty DataFrame if target doesn't exist
-            return pd.DataFrame()
-
-        base_cols = ["Date", "Time", "DateTime", "IPAddress", "Timezone"]
-        available_base_cols = [col for col in base_cols if col in df.columns]
-
-        result_df = df[available_base_cols + target_cols].copy()
-
-        # Rename columns to remove target number suffix
-        rename_dict = {}
-        for col in target_cols:
-            new_name = col.replace(str(target_num), "").rstrip("_")
-            rename_dict[col] = new_name
-
-        result_df = result_df.rename(columns=rename_dict)
-
-        # Add target name if available
-        target_col = f"Target{target_num}"
-        if target_col in df.columns:
-            # Get the first non-null target name
-            target_names = df[target_col].dropna()
-            if not target_names.empty:
-                result_df["TargetName"] = target_names.iloc[0]
-            else:
-                result_df["TargetName"] = f"Target{target_num}"
-        else:
-            result_df["TargetName"] = f"Target{target_num}"
-
-        return result_df
 
     def get_active_targets(self, df: pd.DataFrame) -> List[Dict[str, Any]]:
         """Get list of active targets with their data availability."""
@@ -239,12 +176,3 @@ class NetworkMonitorParser:
                 daily_files.append(filename)
 
         return sorted(daily_files)
-
-    def get_dashboard_data(self) -> Dict:
-        """Get all data needed for the dashboard."""
-        return {
-            "latest_results": self.parse_latest_results(),
-            "event_summary": self.parse_event_summary(),
-            "daily_files": self.get_all_daily_files(),
-            "file_list": self.get_file_list(),
-        }
