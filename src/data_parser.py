@@ -100,35 +100,17 @@ class NetworkMonitorParser:
             print(f"Error parsing daily CSV {filename}: {e}")
             return pd.DataFrame()
 
-    def detect_column_structure(self, df: pd.DataFrame) -> Dict[str, List[str]]:
-        """Detect the actual column structure, handling DNS outages that change column count."""
-        structure = {"target_groups": {}}
-
-        # Find target groups by looking for Target[N] columns
-        target_numbers = set()
-        for col in df.columns:
-            if col.startswith("Target") and col[6:].isdigit():
-                target_num = int(col[6:])
-                target_numbers.add(target_num)
-
-        # Group columns by target number
-        for target_num in sorted(target_numbers):
-            target_cols = []
-            for col in df.columns:
-                if col.endswith(str(target_num)):
-                    target_cols.append(col)
-
-            if target_cols:
-                structure["target_groups"][target_num] = target_cols
-
-        return structure
-
     def get_active_targets(self, df: pd.DataFrame) -> List[Dict[str, Any]]:
         """Get list of active targets with their data availability."""
-        structure = self.detect_column_structure(df)
+        # Find Target[N] columns; handles DNS outages that change column count.
+        target_numbers = sorted(
+            int(col[6:])
+            for col in df.columns
+            if col.startswith("Target") and col[6:].isdigit()
+        )
         active_targets = []
 
-        for target_num in structure["target_groups"]:
+        for target_num in target_numbers:
             target_col = f"Target{target_num}"
             if target_col in df.columns:
                 # Get target name
@@ -155,7 +137,7 @@ class NetworkMonitorParser:
                     }
                 )
 
-        return sorted(active_targets, key=lambda x: x["number"])
+        return active_targets
 
     def get_all_daily_files(self) -> List[str]:
         """Get list of all daily CSV files."""
