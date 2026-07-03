@@ -20,9 +20,6 @@ st.set_page_config(page_title=config.DASHBOARD_TITLE, page_icon="📡", layout="
 st.title(config.DASHBOARD_TITLE)
 
 url = st.sidebar.text_input("Monitor URL", value=config.MONITOR_URL)
-refresh = st.sidebar.number_input(
-    "Refresh interval (s)", min_value=5, value=config.REFRESH_INTERVAL, step=5
-)
 
 parser = NetworkMonitorParser(url)
 
@@ -44,7 +41,7 @@ def line_figure(frame, y_title):
     return fig
 
 
-@st.fragment(run_every=refresh)
+@st.fragment(run_every=config.REFRESH_INTERVAL)
 def current_status():
     st.subheader("📊 Current Status")
     try:
@@ -81,9 +78,9 @@ try:
     files = parser.get_all_daily_files()
 except Exception as e:
     files = []
-    st.error(f"❌ Error listing files: {e}")
+    st.sidebar.error(f"❌ Error listing files: {e}")
 
-selected = st.selectbox(
+selected = st.sidebar.selectbox(
     "Select a date", files, index=None, placeholder="Select a date to view historical data"
 )
 
