@@ -4,32 +4,11 @@ from typing import Any, Dict, List
 
 import pandas as pd
 import requests
-from bs4 import BeautifulSoup
 
 
 class NetworkMonitorParser:
     def __init__(self, base_url: str = "http://192.168.0.246"):
         self.base_url = base_url.rstrip("/")
-
-    def get_file_list(self) -> List[str]:
-        """Get filenames listed on the monitoring device's directory page."""
-        try:
-            response = requests.get(self.base_url)
-            response.raise_for_status()
-
-            soup = BeautifulSoup(response.text, "html.parser")
-            files = []
-
-            for row in soup.find_all("tr")[1:]:  # Skip header row
-                cells = row.find_all("td")
-                if len(cells) >= 4:
-                    link = cells[0].find("a")
-                    if link:
-                        files.append(link.text)
-            return files
-        except Exception as e:
-            print(f"Error fetching file list: {e}")
-            return []
 
     def parse_latest_results(self) -> Dict[str, Dict[str, str]]:
         """Parse the latest results log file."""
@@ -64,13 +43,7 @@ class NetworkMonitorParser:
                                 r"min/avg/max = ([\d.]+)/([\d.]+)/([\d.]+)", data
                             )
                             if timing_match:
-                                result.update(
-                                    {
-                                        "min_delay": float(timing_match.group(1)),
-                                        "avg_delay": float(timing_match.group(2)),
-                                        "max_delay": float(timing_match.group(3)),
-                                    }
-                                )
+                                result["avg_delay"] = float(timing_match.group(2))
 
                             results[target] = result
 
@@ -103,40 +76,33 @@ class NetworkMonitorParser:
         active_targets = []
 
         for target_num in target_numbers:
-            target_col = f"Target{target_num}"
-            if target_col in df.columns:
-                # Get target name
-                target_names = df[target_col].dropna()
-                target_name = (
-                    target_names.iloc[0]
-                    if not target_names.empty
-                    else f"Target{target_num}"
-                )
-
-                # Check data availability
-                delay_col = f"DelayAvg{target_num}"
-                loss_col = f"LossPct{target_num}"
-
-                has_delay_data = delay_col in df.columns and df[delay_col].notna().any()
-                has_loss_data = loss_col in df.columns and df[loss_col].notna().any()
-
-                active_targets.append(
-                    {
-                        "number": target_num,
-                        "name": target_name,
-                        "has_delay_data": has_delay_data,
-                        "has_loss_data": has_loss_data,
-                    }
-                )
+            names = df[f"Target{target_num}"].dropna()
+            delay_col = f"DelayAvg{target_num}"
+            loss_col = f"LossPct{target_num}"
+            active_targets.append(
+                {
+                    "number": target_num,
+                    "name": names.iloc[0] if not names.empty else f"Target{target_num}",
+                    "has_delay_data": delay_col in df.columns and df[delay_col].notna().any(),
+                    "has_loss_data": loss_col in df.columns and df[loss_col].notna().any(),
+                }
+            )
 
         return active_targets
 
     def get_all_daily_files(self) -> List[str]:
-        """Get list of all daily CSV files."""
+        """List daily CSV filenames from the device's directory page (anchor texts)."""
+        try:
+            response = requests.get(self.base_url)
+            response.raise_for_status()
+            names = re.findall(r"<a [^>]*>([^<]+)</a>", response.text)
+        except Exception as e:
+            print(f"Error fetching file list: {e}")
+            return []
         return sorted(
-            filename
-            for filename in self.get_file_list()
-            if filename.startswith("NetMonitor_")
-            and filename.endswith(".csv")
-            and "Event_Summary" not in filename
+            f
+            for f in names
+            if f.startswith("NetMonitor_")
+            and f.endswith(".csv")
+            and "Event_Summary" not in f
         )

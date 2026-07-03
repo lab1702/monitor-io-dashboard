@@ -4,17 +4,12 @@ Run with:  streamlit run app.py
 Config via env vars: MONITOR_URL, REFRESH_INTERVAL, DASHBOARD_TITLE, CHART_HEIGHT.
 """
 
-import os
-import sys
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
-
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-from config import config
-from data_parser import NetworkMonitorParser
+from src import config
+from src.data_parser import NetworkMonitorParser
 
 st.set_page_config(page_title=config.DASHBOARD_TITLE, page_icon="📡", layout="wide")
 st.title(config.DASHBOARD_TITLE)
@@ -95,9 +90,9 @@ if selected:
         for t in active:
             n, name = t["number"], t["name"]
             dcol, lcol = f"DelayAvg{n}", f"LossPct{n}"
-            if t["has_delay_data"] and dcol in df.columns:
+            if t["has_delay_data"]:
                 ping[name] = df[dcol].where(df[dcol] > 0)  # drop invalid/zero delays
-            if t["has_loss_data"] and lcol in df.columns:
+            if t["has_loss_data"]:
                 loss[name] = df[lcol]
 
         st.markdown("**📈 Ping Response Times (ms)**")
